@@ -11,18 +11,16 @@ import torch
 from einops import rearrange
 from huggingface_hub.file_download import hf_hub_download
 from keras.models import load_model  # pylint: disable=import-outside-toplevel
+from ldm.models.diffusion.ddim import DDIMSampler
+from ldm.models.diffusion.plms import PLMSSampler
+from ldm.util import instantiate_from_config
 from omegaconf import OmegaConf
 from PIL import Image
 from torchvision.utils import make_grid
 
-from latentdiffusion.ldm.models.diffusion.ddim import DDIMSampler
-from latentdiffusion.ldm.models.diffusion.plms import PLMSSampler
-from latentdiffusion.ldm.util import instantiate_from_config
 
+sys.path.append("./latentdiffusion")
 
-sys.path.append(".")
-sys.path.append("./taming-transformers")
-sys.path.append("./latent-diffusion")
 model_path_e = hf_hub_download(
     repo_id="multimodalart/compvis-latent-diffusion-text2img-large", filename="txt2img-f8-large.ckpt"
 )
@@ -93,20 +91,20 @@ def is_unsafe(safety_model, embeddings, threshold=0.5):
     return True if x > threshold else False
 
 
-config = OmegaConf.load("latent-diffusion/configs/latent-diffusion/txt2img-1p4B-eval.yaml")
+config = OmegaConf.load("latentdiffusion/configs/latent-diffusion/txt2img-1p4B-eval.yaml")
 model = load_model_from_config(config, model_path_e)
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 model = model.to(device)
 
 # NSFW CLIP Filter
-safety_model = load_safety_model("ViT-B/32")
+# safety_model = load_safety_model("ViT-B/32")
 clip_model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-32", pretrained="openai")
 
 
 def run(prompt, steps, width, height, images, scale):
     opt = argparse.Namespace(
         prompt=prompt,
-        outdir="latent-diffusion/outputs",
+        outdir="latentdiffusion/outputs",
         ddim_steps=int(steps),
         ddim_eta=0,
         n_iter=1,
@@ -164,17 +162,17 @@ def run(prompt, steps, width, height, images, scale):
                         with torch.no_grad():
                             image_features = clip_model.encode_image(image_preprocess)
                         image_features /= image_features.norm(dim=-1, keepdim=True)
-                        query = image_features.cpu().detach().numpy().astype("float32")
-                        unsafe = is_unsafe(safety_model, query, 0.5)
-                        if not unsafe:
-                            all_samples_images.append(image_vector)
-                        else:
-                            return (
-                                None,
-                                None,
-                                "Sorry, potential NSFW content was detected on your outputs by our NSFW detection model. Try again with different prompts. If you feel your prompt was not supposed to give NSFW outputs, this may be due to a bias in the model. Read more about biases in the Biases Acknowledgment section below.",
-                            )
-                        # Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, f"{base_count:04}.png"))
+                        # query = image_features.cpu().detach().numpy().astype("float32")
+                        # unsafe = is_unsafe(safety_model, query, 0.5)
+                        # if not unsafe:
+                        all_samples_images.append(image_vector)
+                        # else:
+                        #    return (
+                        #        None,
+                        #        None,
+                        #        "Sorry, potential NSFW content was detected on your outputs by our NSFW detection model. Try again with different prompts. If you feel your prompt was not supposed to give NSFW outputs, this may be due to a bias in the model. Read more about biases in the Biases Acknowledgment section below.",
+                        #    )
+                        # initially commented out : Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, f"{base_count:04}.png"))
                         base_count += 1
                     all_samples.append(x_samples_ddim)
 

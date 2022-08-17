@@ -6,12 +6,12 @@ app = FastAPI()
 # curl -X POST http://0.0.0.0:8000/generate -H 'Content-Type: application/json' -d '{"data": ["Hello World",50,32,32,4,15.0]}'
 
 
-async def run_tti_model(prompt, steps, width, height, images_num, diversity_scale):
+async def run_tti_model(prompt, steps, width, height, images_num, diversity_scale) -> str:
     base64Data = f"recieve test : {prompt}, {steps}, {width}, {height}, {images_num}, {diversity_scale}"
     return base64Data
 
 
-async def make_images(request_data):
+async def make_images(request_data) -> str:
     print(request_data[5])
 
     prompt, steps, width, height, images_num, diversity_scale = (
@@ -28,7 +28,7 @@ async def make_images(request_data):
 
 
 @app.post("/generate")
-async def generate(request: Request):
+async def generate(request: Request) -> str:
     print("generate")
     json_data = await request.json()
     data = json_data["data"]
