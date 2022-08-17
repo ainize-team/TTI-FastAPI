@@ -1,6 +1,6 @@
 # TTI-FastAPI
 
-Serving Large Language Model Using FastAPI and Celery
+Serving Text to Image Model Using FastAPI and Celery
 
 ## For Developers
 
