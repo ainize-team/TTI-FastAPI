@@ -1,2 +1,20 @@
 fastapi==0.79.0
 uvicorn==0.18.2
+
+-e git+https://github.com/CompVis/taming-transformers.git#egg=taming-transformers
+ftfy 
+regex 
+tqdm 
+omegaconf 
+pytorch-lightning
+torch-fidelity
+transformers   
+einops
+torch
+open_clip_torch
+numpy
+tqdm
+torchvision
+Pillow
+autokeras
+huggingface_hub
