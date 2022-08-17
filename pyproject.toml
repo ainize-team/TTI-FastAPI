@@ -3,4 +3,4 @@ line-length = 119
 target-version = ['py38']
 
 [TYPECHECK]
-generated-members=numpy.*,torch.*
+generated-members=torch.*
