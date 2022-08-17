@@ -1,7 +1,6 @@
 fastapi==0.79.0
 uvicorn==0.18.2
 
--e git+https://github.com/CompVis/taming-transformers.git#egg=taming-transformers
 ftfy 
 regex 
 tqdm 
