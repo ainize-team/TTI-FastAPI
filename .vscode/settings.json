@@ -8,8 +8,5 @@
         "source.organizeImports": true,
         "python.sortImports": true
       }
-    },
-    "python.linting.pylintArgs": [
-      "--generated-members=numpy.* ,torch.*"
-      ]
+    }
   }

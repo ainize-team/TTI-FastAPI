@@ -1,16 +1,16 @@
-# @title Import stuff
 import argparse
 import os
-import sys
-from os.path import expanduser  # pylint: disable=import-outside-toplevel
+import zipfile
+from os.path import expanduser
+from urllib.request import urlretrieve
 
-import autokeras as ak  # pylint: disable=import-outside-toplevel
+import autokeras as ak
 import numpy as np
 import open_clip
 import torch
 from einops import rearrange
-from huggingface_hub.file_download import hf_hub_download
-from keras.models import load_model  # pylint: disable=import-outside-toplevel
+from huggingface_hub import hf_hub_download
+from keras.models import load_model
 from ldm.models.diffusion.ddim import DDIMSampler
 from ldm.models.diffusion.plms import PLMSSampler
 from ldm.util import instantiate_from_config
@@ -19,15 +19,13 @@ from PIL import Image
 from torchvision.utils import make_grid
 
 
-sys.path.append("./latentdiffusion")
-
 model_path_e = hf_hub_download(
     repo_id="multimodalart/compvis-latent-diffusion-text2img-large", filename="txt2img-f8-large.ckpt"
 )
 
 
 def load_model_from_config(config, ckpt, verbose=False):
-    print(f"Loading model from {ckpt}")
+    print(f"[Loading model from {ckpt}")
     pl_sd = torch.load(ckpt, map_location="cuda")
     sd = pl_sd["state_dict"]
     model = instantiate_from_config(config.model)
@@ -46,7 +44,6 @@ def load_model_from_config(config, ckpt, verbose=False):
 
 def load_safety_model(clip_model):
     """load the safety model"""
-
     home = expanduser("~")
 
     cache_folder = home + "/.cache/clip_retrieval/" + clip_model.replace("/", "_")
@@ -60,9 +57,6 @@ def load_safety_model(clip_model):
         raise ValueError("Unknown clip model")
     if not os.path.exists(model_dir):
         os.makedirs(cache_folder, exist_ok=True)
-
-        from urllib.request import urlretrieve  # pylint: disable=import-outside-toplevel
-
         path_to_zip_file = cache_folder + "/clip_autokeras_binary_nsfw.zip"
         if clip_model == "ViT-L/14":
             url_model = "https://raw.githubusercontent.com/LAION-AI/CLIP-based-NSFW-Detector/main/clip_autokeras_binary_nsfw.zip"
@@ -73,8 +67,6 @@ def load_safety_model(clip_model):
         else:
             raise ValueError("Unknown model {}".format(clip_model))
         urlretrieve(url_model, path_to_zip_file)
-        import zipfile  # pylint: disable=import-outside-toplevel
-
         with zipfile.ZipFile(path_to_zip_file, "r") as zip_ref:
             zip_ref.extractall(cache_folder)
 
@@ -91,20 +83,21 @@ def is_unsafe(safety_model, embeddings, threshold=0.5):
     return True if x > threshold else False
 
 
-config = OmegaConf.load("latentdiffusion/configs/latent-diffusion/txt2img-1p4B-eval.yaml")
+config = OmegaConf.load("configs/txt2img-1p4B-eval.yaml")
 model = load_model_from_config(config, model_path_e)
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 model = model.to(device)
 
+
 # NSFW CLIP Filter
-# safety_model = load_safety_model("ViT-B/32")
+safety_model = load_safety_model("ViT-B/32")
 clip_model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-32", pretrained="openai")
 
 
 def run(prompt, steps, width, height, images, scale):
     opt = argparse.Namespace(
         prompt=prompt,
-        outdir="latentdiffusion/outputs",
+        outdir="outputs",
         ddim_steps=int(steps),
         ddim_eta=0,
         n_iter=1,
@@ -125,7 +118,6 @@ def run(prompt, steps, width, height, images, scale):
     outpath = opt.outdir
 
     prompt = opt.prompt
-
     sample_path = os.path.join(outpath, "samples")
     os.makedirs(sample_path, exist_ok=True)
     base_count = len(os.listdir(sample_path))
@@ -162,17 +154,17 @@ def run(prompt, steps, width, height, images, scale):
                         with torch.no_grad():
                             image_features = clip_model.encode_image(image_preprocess)
                         image_features /= image_features.norm(dim=-1, keepdim=True)
-                        # query = image_features.cpu().detach().numpy().astype("float32")
-                        # unsafe = is_unsafe(safety_model, query, 0.5)
-                        # if not unsafe:
-                        all_samples_images.append(image_vector)
-                        # else:
-                        #    return (
-                        #        None,
-                        #        None,
-                        #        "Sorry, potential NSFW content was detected on your outputs by our NSFW detection model. Try again with different prompts. If you feel your prompt was not supposed to give NSFW outputs, this may be due to a bias in the model. Read more about biases in the Biases Acknowledgment section below.",
-                        #    )
-                        # initially commented out : Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, f"{base_count:04}.png"))
+                        query = image_features.cpu().detach().numpy().astype("float32")
+                        unsafe = is_unsafe(safety_model, query, 0.5)
+                        if not unsafe:
+                            all_samples_images.append(image_vector)
+                        else:
+                            return (
+                                None,
+                                None,
+                                "Sorry, potential NSFW content was detected on your outputs by our NSFW detection model. Try again with different prompts. If you feel your prompt was not supposed to give NSFW outputs, this may be due to a bias in the model. Read more about biases in the Biases Acknowledgment section below.",
+                            )
+                        # Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, f"{base_count:04}.png"))
                         base_count += 1
                     all_samples.append(x_samples_ddim)
 
@@ -185,3 +177,6 @@ def run(prompt, steps, width, height, images, scale):
 
     Image.fromarray(grid.astype(np.uint8)).save(os.path.join(outpath, f'{prompt.replace(" ", "-")}.png'))
     return (Image.fromarray(grid.astype(np.uint8)), all_samples_images, None)
+
+
+run("dog shaped lamp", 45, 256, 256, 2, 5)
