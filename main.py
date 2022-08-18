@@ -6,6 +6,7 @@ app = FastAPI()
 # curl -X POST http://0.0.0.0:8000/generate -H 'Content-Type: application/json' -d '{"data": ["Hello World",50,32,32,4,15.0]}'
 
 
+# TODO: implement latent diffusion model to use that in this function
 async def run_tti_model(prompt, steps, width, height, images_num, diversity_scale) -> str:
     base64Data = f"recieve test : {prompt}, {steps}, {width}, {height}, {images_num}, {diversity_scale}"
     return base64Data
