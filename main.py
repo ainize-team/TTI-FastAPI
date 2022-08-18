@@ -1,3 +1,6 @@
+import asyncio
+import base64
+
 from fastapi import FastAPI, Request
 
 
@@ -8,8 +11,10 @@ app = FastAPI()
 
 # TODO: implement latent diffusion model to use that in this function
 async def run_tti_model(prompt, steps, width, height, images_num, diversity_scale) -> str:
-    base64Data = f"recieve test : {prompt}, {steps}, {width}, {height}, {images_num}, {diversity_scale}"
-    return base64Data
+    with open("out.png", "rb") as img_file:
+        b64_string = base64.b64encode(img_file.read())
+    await asyncio.sleep(7)
+    return b64_string
 
 
 async def make_images(request_data) -> str:
@@ -29,11 +34,10 @@ async def make_images(request_data) -> str:
 
 
 @app.post("/generate")
-async def generate(request: Request) -> str:
+async def generate(request: Request) -> dict:
     print("generate")
     json_data = await request.json()
     data = json_data["data"]
 
     base64_data = await make_images(data)
-    print(base64_data)
-    return base64_data
+    return {"base64_data": base64_data}
