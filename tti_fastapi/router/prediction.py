@@ -21,8 +21,16 @@ from ldm.models.diffusion.plms import PLMSSampler
 router = APIRouter()
 
 
-@router.post("/generate")
-def post_generation(request: Request, data: GenerationRequest) -> FileResponse:
+@router.post(
+    "/generate",
+    responses={
+        200: {
+            "content": {"image/png": {}},
+            "description": "Return the JSON item or an image.",
+        }
+    },
+)
+def post_generation(request: Request, data: GenerationRequest):
     model: LatentDiffusion = request.app.state.model
     clip_model = request.app.state.clip_model
     preprocess = request.app.state.preprocess
@@ -113,4 +121,4 @@ def post_generation(request: Request, data: GenerationRequest) -> FileResponse:
     now = datetime.utcnow().timestamp()
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
     Image.fromarray(grid.astype(np.uint8)).save(os.path.join(outpath, f"{task_id}.png"))
-    return FileResponse(os.path.join(outpath, f"{task_id}.png"))
+    return FileResponse(os.path.join(outpath, f"{task_id}.png"), media_type="image/png")
