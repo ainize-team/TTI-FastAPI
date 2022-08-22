@@ -21,15 +21,7 @@ from ldm.models.diffusion.plms import PLMSSampler
 router = APIRouter()
 
 
-@router.post(
-    "/generate",
-    responses={
-        200: {
-            "content": {"image/png": {}},
-            "description": "Return the JSON item or an image.",
-        }
-    },
-)
+@router.post("/generate", response_class=FileResponse)
 def post_generation(request: Request, data: GenerationRequest):
     model: LatentDiffusion = request.app.state.model
     clip_model = request.app.state.clip_model
@@ -61,7 +53,6 @@ def post_generation(request: Request, data: GenerationRequest):
 
     sample_path = os.path.join(outpath, "samples")
     os.makedirs(sample_path, exist_ok=True)
-    base_count = len(os.listdir(sample_path))
 
     all_samples = list()
     all_samples_images = list()
@@ -97,18 +88,6 @@ def post_generation(request: Request, data: GenerationRequest):
                         image_features = clip_model.encode_image(image_preprocess)
                     image_features /= image_features.norm(dim=-1, keepdim=True)
                     all_samples_images.append(image_vector)
-                    # query = image_features.cpu().detach().numpy().astype("float32")
-                    # unsafe = is_unsafe(safety_model, query, 0.5)
-                    # if not unsafe:
-                    #     all_samples_images.append(image_vector)
-                    # else:
-                    #     return (
-                    #         None,
-                    #         None,
-                    #         "Sorry, potential NSFW content was detected on your outputs by our NSFW detection model. Try again with different prompts. If you feel your prompt was not supposed to give NSFW outputs, this may be due to a bias in the model. Read more about biases in the Biases Acknowledgment section below.",
-                    #     )
-                    # Image.fromarray(x_sample.astype(np.uint8)).save(os.path.join(sample_path, f"{base_count:04}.png"))
-                    base_count += 1
                 all_samples.append(x_samples_ddim)
 
     # additionally, save as grid
@@ -121,4 +100,4 @@ def post_generation(request: Request, data: GenerationRequest):
     now = datetime.utcnow().timestamp()
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
     Image.fromarray(grid.astype(np.uint8)).save(os.path.join(outpath, f"{task_id}.png"))
-    return FileResponse(os.path.join(outpath, f"{task_id}.png"), media_type="image/png")
+    return os.path.join(outpath, f"{task_id}.png")
