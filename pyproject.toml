@@ -1,3 +1,59 @@
 [tool.black]
 line-length = 119
 target-version = ['py38']
+
+[tool.isort]
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+include_trailing_comma = true
+known_first_party = [
+    "config",
+    "enums",
+    "event_handlers",
+    "ldm",
+    "taming",
+    "router"
+]
+
+line_length = 119
+lines_after_imports = 2
+multi_line_output = 3
+use_parentheses = true
+
+
+[tool.poetry]
+name = "TTI-FastAPI"
+version = "0.1.0"
+description = ""
+authors = ["Jibaek Lim <jibaek@comcom.ai>", "YoungJae Kim <byeongal@comcom.ai>", "DongHoon Baek <baek@comcom.ai>", "Heewon Shin <heewon@comcom.ai>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.79.0"
+uvicorn = "^0.18.2"
+loguru = "^0.6.0"
+omegaconf = "^2.2.2"
+numpy = "^1.23.2"
+torch = "^1.11.0"
+pytorch-lightning = "^1.7.2"
+torchvision = "^0.13.1"
+albumentations = "^1.2.1"
+opencv-python = "^4.6.0"
+einops = "^0.4.1"
+matplotlib = "^3.5.3"
+transformers = "^4.21.1"
+natsort = "^8.1.0"
+open-clip-torch = "^1.3.0"
+more-itertools = "^8.14.0"
+scikit-image = "^0.19.3"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+pre-commit = "^2.20.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
