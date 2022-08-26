@@ -1,5 +1,3 @@
-from typing import Union
-
 from pydantic import BaseModel, Field
 
 from enums import ResponseStatusEnum
@@ -27,4 +25,3 @@ class AsyncTaskResponse(BaseModel):
 class ImageGenerationStatuseResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     updated_at: float = 0.0
-    result: Union[str, None] = None
