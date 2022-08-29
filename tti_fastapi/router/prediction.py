@@ -1,4 +1,3 @@
-import json
 import uuid
 from datetime import datetime
 
@@ -6,40 +5,67 @@ import fastapi
 import pytz
 from celery import Celery
 from fastapi import APIRouter, HTTPException, Request
-from redis import Redis
-from schemas import AsyncTaskResponse, ImageGenerationRequest, ImageGenerationStatuseResponse
+from firebase_admin import db
+from schemas import AsyncTaskResponse, ImageGenerationRequest, ImageGenerationResponse
 
+from config import firebase_settings
 from enums import ResponseStatusEnum
 
 
 router = APIRouter()
 
 
-@router.post("/generate", response_class=AsyncTaskResponse)
-def post_generation(request: Request, data: ImageGenerationRequest):
-    redis: Redis = request.app.state.redis
+@router.post("/generate", response_model=AsyncTaskResponse)
+def post_generation(
+    request: Request,
+    data: ImageGenerationRequest,
+):
     celery: Celery = request.app.state.celery
     now = datetime.utcnow().replace(tzinfo=pytz.utc).timestamp()
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
-    response = ImageGenerationStatuseResponse(status=ResponseStatusEnum.PENDING, updated_at=now)
-    redis.set(task_id, json.dumps(dict(response)))
-    celery.send_task(
-        name="generate",
-        kwargs={
-            "task_id": task_id,
-            "data": dict(data),
-        },
-        queue="tti",
-    )
+    try:
+        celery.send_task(
+            name="generate",
+            kwargs={
+                "task_id": task_id,
+                "data": dict(data),
+            },
+            queue="tti",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Celery Error({task_id}): {e}"
+        )
+    try:
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
+        request_body = data.dict()
+        request_body["status"] = ResponseStatusEnum.PENDING
+        request_body["updated_at"] = now
+        ref.set(request_body)
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
+        )
     return AsyncTaskResponse(task_id=task_id)
 
 
-@router.get("/status/{task_id}", response_class=ImageGenerationStatuseResponse)
-async def get_result(request: Request, task_id: str):
-    redis: Redis = request.app.state.redis
-    data = json.loads(redis.get(task_id))
-    if data is None:
-        raise HTTPException(status_code=fastapi.status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
-    if hasattr(data, "message"):
-        raise HTTPException(status_code=data["status_code"], detail=data["message"])
-    return ImageGenerationStatuseResponse(status=data["status"], result=data["result"], updated_at=data["updated_at"])
+@router.get("/result/{task_id}", response_model=ImageGenerationResponse)
+async def get_result(task_id: str):
+    try:
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
+        data = ref.get()
+        if data is None:
+            raise HTTPException(
+                status_code=fastapi.status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found"
+            )
+        if data["status"] == ResponseStatusEnum.ERROR:
+            raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
+        return ImageGenerationResponse(
+            status=data["status"],
+            updated_at=data["updated_at"],
+            result=data["path"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
+        )

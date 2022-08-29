@@ -1,4 +1,4 @@
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 from enums import EnvEnum
 
@@ -9,26 +9,17 @@ class ServerSettings(BaseSettings):
     app_env: EnvEnum = EnvEnum.DEV
 
 
-class RedisSettings(BaseSettings):
-    redis_host: str = "localhost"
-    redis_port: int = Field(
-        default=6379,
-        ge=0,
-        le=65535,
-    )
-    redis_db: int = Field(
-        default=0,
-        ge=0,
-        le=15,
-    )
-    redis_password: str = ""
+class FireBaseSettings(BaseSettings):
+    firebase_app_name: str = "text-to-image"
+    firebase_cred_path: str = "./key/serviceAccountKey.json"
+    firebase_database_url: str
+    firebase_storage_bucket: str
 
 
 class CelerySettings(BaseSettings):
-    backend_uri: str = "Auto Generate"
     broker_uri: str
 
 
 server_settings = ServerSettings()
-redis_settings = RedisSettings()
+firebase_settings = FireBaseSettings()
 celery_settings = CelerySettings()

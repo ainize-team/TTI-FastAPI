@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+from typing import List, Union
+
+from pydantic import BaseModel, Field, HttpUrl
 
 from enums import ResponseStatusEnum
 
@@ -22,6 +24,12 @@ class AsyncTaskResponse(BaseModel):
     task_id: str
 
 
-class ImageGenerationStatuseResponse(BaseModel):
+class Error(BaseModel):
+    status_code: int
+    error_message: str
+
+
+class ImageGenerationResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     updated_at: float = 0.0
+    result: Union[List[HttpUrl], None] = None
