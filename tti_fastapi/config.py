@@ -13,7 +13,6 @@ class FireBaseSettings(BaseSettings):
     firebase_app_name: str = "text-to-image"
     firebase_cred_path: str = "./key/serviceAccountKey.json"
     firebase_database_url: str
-    firebase_storage_bucket: str
 
 
 class CelerySettings(BaseSettings):

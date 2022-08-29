@@ -14,8 +14,7 @@ def _setup_firebase(app: FastAPI) -> None:
     firebase_admin.initialize_app(
         cred,
         {
-            "databaseURL": firebase_settings.firebase_database_url,
-            "storageBucket": firebase_settings.firebase_storage_bucket,
+            "databaseURL": firebase_settings.firebase_database_url
         },
     )
 
