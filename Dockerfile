@@ -47,12 +47,6 @@ COPY ./pyproject.toml ./pyproject.toml
 COPY ./poetry.lock ./poetry.lock
 RUN poetry install --no-dev
 
-ARG MODEL_URL="https://ommer-lab.com/files/latent-diffusion/nitro/txt2img-f8-large/model.ckpt"
-ARG CONFIG_URL="https://raw.githubusercontent.com/CompVis/latent-diffusion/main/configs/latent-diffusion/txt2img-1p4B-eval.yaml"
-RUN mkdir /app/model
-RUN wget --no-verbose --show-progress --progress=bar:force:noscroll -O /app/model/model.ckpt ${MODEL_URL}
-RUN wget --no-verbose --show-progress --progress=bar:force:noscroll -O /app/model/config.yaml ${CONFIG_URL}
-
 COPY ./tti_fastapi/ /app/
 
 EXPOSE 8000
