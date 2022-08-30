@@ -1,5 +1,4 @@
-from typing import Dict, Union
-from xmlrpc.client import Boolean
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -32,7 +31,7 @@ class Error(BaseModel):
 
 class ImageGenerationResult(BaseModel):
     url: HttpUrl
-    is_filtered: Boolean
+    is_filtered: Optional[bool]
 
 
 class ImageGenerationResponse(BaseModel):
