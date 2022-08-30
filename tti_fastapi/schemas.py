@@ -22,6 +22,7 @@ class ImageGenerationRequest(BaseModel):
 
 class AsyncTaskResponse(BaseModel):
     task_id: str
+    updated_at: float = 0.0
 
 
 class Error(BaseModel):

@@ -42,7 +42,7 @@ def post_generation(
         ref.set(request_body)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
-    return AsyncTaskResponse(task_id=task_id)
+    return AsyncTaskResponse(task_id=task_id, updated_at=now)
 
 
 @router.get("/result/{task_id}", response_model=ImageGenerationResponse)
