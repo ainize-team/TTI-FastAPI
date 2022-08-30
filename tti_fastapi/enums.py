@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum
 
 
 class StrEnum(str, Enum):
@@ -15,8 +15,8 @@ class EnvEnum(StrEnum):
     PROD: str = "prod"
 
 
-class ImageSizeEnum(IntEnum):
-    SIZE_32: int = 32
-    SIZE_64: int = 64
-    SIZE_128: int = 128
-    SIZE_256: int = 256
+class ResponseStatusEnum(StrEnum):
+    PENDING: str = "pending"
+    ASSIGNED: str = "assigned"
+    COMPLETED: str = "completed"
+    ERROR: str = "error"
