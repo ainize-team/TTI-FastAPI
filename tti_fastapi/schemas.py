@@ -1,4 +1,5 @@
 from typing import Dict, Union
+from xmlrpc.client import Boolean
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -29,7 +30,12 @@ class Error(BaseModel):
     error_message: str
 
 
+class ImageGenerationResult(BaseModel):
+    url: HttpUrl
+    is_filtered: Boolean
+
+
 class ImageGenerationResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     updated_at: float = 0.0
-    result: Union[Dict[str, HttpUrl], None] = None
+    result: Union[Dict[str, ImageGenerationResult], None] = None

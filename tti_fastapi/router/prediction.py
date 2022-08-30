@@ -4,7 +4,7 @@ from datetime import datetime
 import fastapi
 import pytz
 from celery import Celery
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, status
 from firebase_admin import db
 from schemas import AsyncTaskResponse, ImageGenerationRequest, ImageGenerationResponse
 
@@ -33,9 +33,7 @@ def post_generation(
             queue="tti",
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Celery Error({task_id}): {e}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Celery Error({task_id}): {e}")
     try:
         ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
         request_body = data.dict()
@@ -43,9 +41,7 @@ def post_generation(
         request_body["updated_at"] = now
         ref.set(request_body)
     except Exception as e:
-        raise HTTPException(
-            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
     return AsyncTaskResponse(task_id=task_id)
 
 
@@ -55,9 +51,7 @@ async def get_result(task_id: str):
         ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
         data = ref.get()
         if data is None:
-            raise HTTPException(
-                status_code=fastapi.status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
         if data["status"] == ResponseStatusEnum.ERROR:
             raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
         return ImageGenerationResponse(
