@@ -11,7 +11,7 @@ class ImageGenerationRequest(BaseModel):
         description="try adding increments to your prompt such as 'oil on canvas', 'a painting', 'a book cover'",
     )
     steps: int = Field(
-        default=45, ge=1, le=50, description="more steps can increase quality but will take longer to generate"
+        default=45, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
     seed: int = Field(default=1, ge=0, le=2147483647)
     width: int = Field(default=512, ge=32, le=512)
