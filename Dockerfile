@@ -5,7 +5,6 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
-    # VIRTUAL_ENVIRONMENT_PATH="/app/.venv"
     DEBIAN_FRONTEND=noninteractive 
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
@@ -40,7 +39,7 @@ RUN python -m pip install -U pip setuptools
 
 # Install Poetry
 # https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python - 
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
 WORKDIR /app
 COPY ./pyproject.toml ./pyproject.toml
