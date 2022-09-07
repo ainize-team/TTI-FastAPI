@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Union
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, validator
 
 from enums import ResponseStatusEnum
 
@@ -14,10 +14,20 @@ class ImageGenerationRequest(BaseModel):
         default=45, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
     seed: int = Field(default=1, ge=0, le=2147483647)
-    width: int = Field(default=512, ge=32, le=512)
-    height: int = Field(default=512, ge=32, le=512)
+    width: int = Field(default=512, ge=512, le=1024)
+    height: int = Field(default=512, ge=512, le=1024)
     images: int = Field(2, ge=1, le=4, description="How many images you wish to generate")
     guidance_scale: float = Field(7.5, ge=0, le=50, description="how much the prompt will influence the results")
+
+    @validator("width")
+    def validate_width(cls, v):
+        if v % 64 != 0:
+            raise ValueError("ensure that value is a multiple of 64")
+
+    @validator("height")
+    def validate_height(cls, v):
+        if v % 64 != 0:
+            raise ValueError("ensure that value is a multiple of 64")
 
 
 class AsyncTaskResponse(BaseModel):
