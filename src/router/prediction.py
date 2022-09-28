@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 
 import fastapi
-import pytz
 from celery import Celery
 from fastapi import APIRouter, HTTPException, Request, status
 from firebase_admin import db
@@ -21,7 +20,7 @@ def post_generation(
     data: ImageGenerationRequest,
 ):
     celery: Celery = request.app.state.celery
-    now = datetime.utcnow().replace(tzinfo=pytz.utc).timestamp()
+    now = datetime.utcnow().timestamp()
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
     try:
         celery.send_task(
