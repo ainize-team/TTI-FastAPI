@@ -46,7 +46,7 @@ COPY ./pyproject.toml ./pyproject.toml
 COPY ./poetry.lock ./poetry.lock
 RUN poetry install --no-dev
 
-COPY ./tti_fastapi/ /app/
+COPY ./src/ /app/
 
 EXPOSE 8000
 
