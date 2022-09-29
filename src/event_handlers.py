@@ -13,9 +13,7 @@ def _setup_firebase(app: FastAPI) -> None:
     cred = credentials.Certificate(firebase_settings.firebase_cred_path)
     firebase_admin.initialize_app(
         cred,
-        {
-            "databaseURL": firebase_settings.firebase_database_url
-        },
+        {"databaseURL": firebase_settings.firebase_database_url},
     )
 
 

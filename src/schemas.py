@@ -42,6 +42,7 @@ class Error(BaseModel):
 
 class ImageGenerationResult(BaseModel):
     url: HttpUrl
+    origin_url: Optional[HttpUrl]
     is_filtered: Optional[bool]
 
 
