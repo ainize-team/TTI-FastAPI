@@ -23,11 +23,13 @@ class ImageGenerationRequest(BaseModel):
     def validate_width(cls, v):
         if v % 64 != 0:
             raise ValueError("ensure that value is a multiple of 64")
+        return v
 
     @validator("height")
     def validate_height(cls, v):
         if v % 64 != 0:
             raise ValueError("ensure that value is a multiple of 64")
+        return v
 
 
 class AsyncTaskResponse(BaseModel):
