@@ -22,12 +22,21 @@ def post_generation(
     celery: Celery = request.app.state.celery
     now = int(datetime.utcnow().timestamp() * 1000)
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
+    request_data = {
+        "prompt": data.prompt,
+        "steps": data.steps,
+        "seed": data.seed,
+        "width": data.width,
+        "height": data.height,
+        "images": data.images,
+        "guidance_scale": data.guidance_scale,
+    }
     try:
         celery.send_task(
             name="generate",
             kwargs={
                 "task_id": task_id,
-                "data": dict(data),
+                "data": request_data,
             },
             queue="tti",
         )
@@ -37,15 +46,7 @@ def post_generation(
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         request_body = {
             "message": {"guild_id": data.guild_id, "channel_id": data.channel_id, "message_id": data.message_id},
-            "request": {
-                "steps": data.steps,
-                "seed": data.seed,
-                "width": data.width,
-                "height": data.height,
-                "images": data.images,
-                "guidance_scale": data.guidance_scale,
-                "requested_at": now,
-            },
+            "request": request_data,
             "status": ResponseStatusEnum.PENDING,
             "updated_at": now,
             "user_id": data.user_id,
