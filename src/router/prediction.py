@@ -68,7 +68,7 @@ async def get_result(task_id: str):
         return ImageGenerationResponse(
             status=data["status"],
             updated_at=data["updated_at"],
-            result=data["results"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
+            result=data["response"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
         )
     except Exception as e:
         raise HTTPException(
