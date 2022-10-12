@@ -59,7 +59,7 @@ def post_generation(
 @router.get("/result/{task_id}", response_model=ImageGenerationResponse)
 async def get_result(task_id: str):
     try:
-        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
         if data is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
