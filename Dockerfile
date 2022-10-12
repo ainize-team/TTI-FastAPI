@@ -1,46 +1,24 @@
-FROM nvidia/cuda:10.2-cudnn8-runtime-ubuntu18.04
+FROM python:3.8.13-slim-buster
 
 # set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
-    DEBIAN_FRONTEND=noninteractive 
+    VIRTUAL_ENVIRONMENT_PATH="/app/.venv"
 
-ENV PATH="$POETRY_HOME/bin:$PATH"
-
-# Install Python3.8
-RUN apt-get update && \
-    apt remove python-pip  python3-pip && \
-    apt-get install --no-install-recommends -y \
-    build-essential \
-    ca-certificates \
-    curl \
-    g++ \
-    python3.8 \
-    python3.8-dev \
-    python3.8-distutils \
-    python3.8-venv \
-    python3-venv \
-    wget \
-    && rm -rf /var/lib/apt/lists/* \
-    && cd /tmp \
-    && curl -O https://bootstrap.pypa.io/get-pip.py \
-    && python3.8 get-pip.py
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 \
-    && update-alternatives --install /usr/local/bin/pip pip /usr/local/bin/pip3.8 1
-
-RUN python3.8 -m venv /home/venv
-
-ENV PATH="/home/venv/bin:$PATH"
-
-RUN python -m pip install -U pip setuptools
+ENV PATH="$POETRY_HOME/bin:$VIRTUAL_ENVIRONMENT_PATH/bin:$PATH"
 
 # Install Poetry
 # https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    build-essential \
+    curl \
+    && curl -sSL https://install.python-poetry.org | python3 - \
+    && apt-get purge --auto-remove -y \
+    build-essential
+    
 WORKDIR /app
 COPY ./pyproject.toml ./pyproject.toml
 COPY ./poetry.lock ./poetry.lock

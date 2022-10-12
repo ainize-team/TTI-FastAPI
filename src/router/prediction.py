@@ -20,7 +20,7 @@ def post_generation(
     data: ImageGenerationRequest,
 ):
     celery: Celery = request.app.state.celery
-    now = datetime.utcnow().timestamp()
+    now = int(datetime.utcnow().timestamp() * 1000)
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
     try:
         celery.send_task(
@@ -34,10 +34,22 @@ def post_generation(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Celery Error({task_id}): {e}")
     try:
-        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
-        request_body = data.dict()
-        request_body["status"] = ResponseStatusEnum.PENDING
-        request_body["updated_at"] = now
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
+        request_body = {
+            "message": {"guild_id": data.guild_id, "channel_id": data.channel_id, "message_id": data.message_id},
+            "request": {
+                "steps": data.steps,
+                "seed": data.seed,
+                "width": data.width,
+                "height": data.height,
+                "images": data.images,
+                "guidance_scale": data.guidance_scale,
+                "requested_at": now,
+            },
+            "status": ResponseStatusEnum.PENDING,
+            "updated_at": now,
+            "user_id": data.user_id,
+        }
         ref.set(request_body)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
