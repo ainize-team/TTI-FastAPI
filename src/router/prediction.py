@@ -20,24 +20,37 @@ def post_generation(
     data: ImageGenerationRequest,
 ):
     celery: Celery = request.app.state.celery
-    now = datetime.utcnow().timestamp()
+    now = int(datetime.utcnow().timestamp() * 1000)
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
+    request_data = {
+        "prompt": data.prompt,
+        "steps": data.steps,
+        "seed": data.seed,
+        "width": data.width,
+        "height": data.height,
+        "images": data.images,
+        "guidance_scale": data.guidance_scale,
+    }
     try:
         celery.send_task(
             name="generate",
             kwargs={
                 "task_id": task_id,
-                "data": dict(data),
+                "data": request_data,
             },
             queue="tti",
         )
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Celery Error({task_id}): {e}")
     try:
-        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
-        request_body = data.dict()
-        request_body["status"] = ResponseStatusEnum.PENDING
-        request_body["updated_at"] = now
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
+        request_body = {
+            "message": {"guild_id": data.guild_id, "channel_id": data.channel_id, "message_id": data.message_id},
+            "request": request_data,
+            "status": ResponseStatusEnum.PENDING,
+            "updated_at": now,
+            "user_id": data.user_id,
+        }
         ref.set(request_body)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
@@ -47,7 +60,7 @@ def post_generation(
 @router.get("/result/{task_id}", response_model=ImageGenerationResponse)
 async def get_result(task_id: str):
     try:
-        ref = db.reference(f"{firebase_settings.firebase_app_name}/{task_id}")
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
         if data is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
@@ -56,7 +69,7 @@ async def get_result(task_id: str):
         return ImageGenerationResponse(
             status=data["status"],
             updated_at=data["updated_at"],
-            result=data["results"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
+            result=data["response"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
         )
     except Exception as e:
         raise HTTPException(
