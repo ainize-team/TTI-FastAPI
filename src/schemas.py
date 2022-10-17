@@ -10,10 +10,10 @@ class ImageGenerationRequest(BaseModel):
         ...,
         description="try adding increments to your prompt such as 'oil on canvas', 'a painting', 'a book cover'",
     )
-    user_id: int = Field(..., description="The user's unique ID.")
-    guild_id: int = Field(..., description="The guild's ID.")
-    channel_id: int = Field(..., description="The channel ID.")
-    message_id: int = Field(..., description="The message ID.")
+    user_id: str = Field(..., description="The user's unique ID.")
+    guild_id: str = Field(..., description="The guild's ID.")
+    channel_id: str = Field(..., description="The channel ID.")
+    message_id: str = Field(..., description="The message ID.")
     steps: int = Field(
         default=45, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
