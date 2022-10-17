@@ -17,7 +17,7 @@ class ImageGenerationRequest(BaseModel):
     steps: int = Field(
         default=45, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
-    seed: int = Field(default=1, ge=0, le=2147483647)
+    seed: int = Field(default=1, ge=0, le=4294967295)
     width: int = Field(default=512, ge=512, le=1024)
     height: int = Field(default=512, ge=512, le=1024)
     images: int = Field(2, ge=1, le=4, description="How many images you wish to generate")
