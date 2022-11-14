@@ -5,17 +5,20 @@ from pydantic import BaseModel, Field, HttpUrl, validator
 from enums import ResponseStatusEnum
 
 
-class ImageGenerationRequest(BaseModel):
-    prompt: str = Field(
-        ...,
-        description="try adding increments to your prompt such as 'oil on canvas', 'a painting', 'a book cover'",
-    )
+class ImageGenerationDiscordParams(BaseModel):
     user_id: str = Field(..., description="The user's unique ID.")
     guild_id: str = Field(..., description="The guild's ID.")
     channel_id: str = Field(..., description="The channel ID.")
     message_id: str = Field(..., description="The message ID.")
+
+
+class ImageGenerationParams(BaseModel):
+    prompt: str = Field(
+        ...,
+        description="try adding increments to your prompt such as 'oil on canvas', 'a painting', 'a book cover'",
+    )
     steps: int = Field(
-        default=45, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
+        default=50, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
     seed: int = Field(default=1, ge=0, le=4294967295)
     width: int = Field(default=512, ge=512, le=1024)
@@ -34,6 +37,11 @@ class ImageGenerationRequest(BaseModel):
         if v % 64 != 0:
             raise ValueError("ensure that value is a multiple of 64")
         return v
+
+
+class ImageGenerationRequest(BaseModel):
+    discord: ImageGenerationDiscordParams
+    params: ImageGenerationParams
 
 
 class AsyncTaskResponse(BaseModel):
@@ -56,3 +64,9 @@ class ImageGenerationResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     updated_at: float = 0.0
     result: Union[Dict[str, ImageGenerationResult], None] = None
+
+
+class ImageGenerationParamsResponse(BaseModel):
+    status: ResponseStatusEnum = ResponseStatusEnum.PENDING
+    params: ImageGenerationParams
+    updated_at: float = 0.0

@@ -8,7 +8,13 @@ from firebase_admin import db
 
 from config import firebase_settings
 from enums import ResponseStatusEnum
-from schemas import AsyncTaskResponse, ImageGenerationRequest, ImageGenerationResponse
+from schemas import (
+    AsyncTaskResponse,
+    ImageGenerationParams,
+    ImageGenerationParamsResponse,
+    ImageGenerationRequest,
+    ImageGenerationResponse,
+)
 
 
 router = APIRouter()
@@ -22,15 +28,7 @@ def post_generation(
     celery: Celery = request.app.state.celery
     now = int(datetime.utcnow().timestamp() * 1000)
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
-    request_data = {
-        "prompt": data.prompt,
-        "steps": data.steps,
-        "seed": data.seed,
-        "width": data.width,
-        "height": data.height,
-        "images": data.images,
-        "guidance_scale": data.guidance_scale,
-    }
+    request_data = data.params.dict()
     try:
         celery.send_task(
             name="generate",
@@ -45,11 +43,15 @@ def post_generation(
     try:
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         request_body = {
-            "message": {"guild_id": data.guild_id, "channel_id": data.channel_id, "message_id": data.message_id},
+            "message": {
+                "guild_id": data.discord.guild_id,
+                "channel_id": data.discord.channel_id,
+                "message_id": data.discord.message_id,
+            },
             "request": request_data,
             "status": ResponseStatusEnum.PENDING,
             "updated_at": now,
-            "user_id": data.user_id,
+            "user_id": data.discord.user_id,
         }
         ref.set(request_body)
     except Exception as e:
@@ -57,8 +59,8 @@ def post_generation(
     return AsyncTaskResponse(task_id=task_id, updated_at=now)
 
 
-@router.get("/result/{task_id}", response_model=ImageGenerationResponse)
-async def get_result(task_id: str):
+@router.get("/tasks/{task_id}/images", response_model=ImageGenerationResponse)
+async def get_task_image(task_id: str):
     try:
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
@@ -70,6 +72,34 @@ async def get_result(task_id: str):
             status=data["status"],
             updated_at=data["updated_at"],
             result=data["response"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
+        )
+
+
+@router.get("/tasks/{task_id}/params", response_model=ImageGenerationParamsResponse)
+async def get_task_params(task_id: str):
+    try:
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
+        data = ref.get()
+        if data is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
+        if data["status"] == ResponseStatusEnum.ERROR:
+            raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
+        return ImageGenerationParamsResponse(
+            status=data["status"],
+            params=ImageGenerationParams(
+                prompt=data["request"]["prompt"],
+                steps=data["request"]["steps"],
+                seed=data["request"]["seed"],
+                width=data["request"]["width"],
+                height=data["request"]["height"],
+                images=data["request"]["images"],
+                guidance_scale=data["request"]["guidance_scale"],
+            ),
+            updated_at=data["updated_at"],
         )
     except Exception as e:
         raise HTTPException(
