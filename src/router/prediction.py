@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Dict
 
 import fastapi
 from celery import Celery
@@ -25,7 +26,12 @@ def post_generation(
     request: Request,
     data: ImageGenerationRequest,
 ):
-    celery: Celery = request.app.state.celery
+    celery_dict: Dict[str, Celery] = request.app.state.celery
+    model_id = data.params.model_id
+    if model_id not in celery_dict:
+        valid_model_ids = ", ".join(list(celery_dict.keys()))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Only Support : {valid_model_ids}")
+    celery = celery_dict[model_id]
     now = int(datetime.utcnow().timestamp() * 1000)
     task_id = str(uuid.uuid5(uuid.NAMESPACE_OID, str(now)))
     request_data = data.params.dict()

@@ -16,7 +16,7 @@ class FireBaseSettings(BaseSettings):
 
 
 class CelerySettings(BaseSettings):
-    broker_uri: str
+    broker_base_uri: str
 
 
 server_settings = ServerSettings()
