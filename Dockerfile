@@ -22,7 +22,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY ./pyproject.toml ./pyproject.toml
 COPY ./poetry.lock ./poetry.lock
-RUN poetry install --no-dev
+RUN poetry install --only main
 
 COPY ./src/ /app/
 
