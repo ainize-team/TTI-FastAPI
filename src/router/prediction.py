@@ -70,24 +70,25 @@ async def get_task_image(task_id: str):
     try:
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
-        if data is None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
-        if data["status"] == ResponseStatusEnum.ERROR:
-            raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
-        return ImageGenerationResponse(
-            status=data["status"],
-            updated_at=data["updated_at"],
-            result=data["response"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
-        )
     except Exception as e:
         raise HTTPException(
             status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
         )
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
+    if data["status"] == ResponseStatusEnum.ERROR:
+        raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
+    return ImageGenerationResponse(
+        status=data["status"],
+        updated_at=data["updated_at"],
+        result=data["response"] if data["status"] == ResponseStatusEnum.COMPLETED else None,
+    )
 
 
 @router.get("/tasks/{task_id}/params", response_model=ImageGenerationParamsResponse)
 async def get_task_params(task_id: str):
     try:
+        logger.info(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
         if data is None:
