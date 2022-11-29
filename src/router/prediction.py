@@ -92,7 +92,6 @@ async def get_task_image(task_id: str):
 @router.get("/tasks/{task_id}/params", response_model=ImageGenerationParamsResponse)
 async def get_task_params(task_id: str):
     try:
-        logger.info(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
         if data is None:
