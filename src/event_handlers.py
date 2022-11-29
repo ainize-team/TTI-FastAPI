@@ -25,7 +25,7 @@ def _setup_celery(app: FastAPI) -> None:
         exit()
     app.state.celery = {}
     for model_id in data.keys():
-        app.state.celery[model_id] = Celery(broker=f"{celery_settings.broker_uri}/{model_id}")
+        app.state.celery[model_id] = Celery(broker=f"{celery_settings.broker_base_uri}/{model_id}")
 
 
 def start_app_handler(app: FastAPI) -> Callable:

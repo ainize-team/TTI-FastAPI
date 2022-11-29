@@ -21,8 +21,8 @@ class ImageGenerationParams(BaseModel):
         default=50, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
     )
     seed: int = Field(default=1, ge=0, le=4294967295)
-    width: int = Field(default=512, ge=512, le=1024)
-    height: int = Field(default=512, ge=512, le=1024)
+    width: int = Field(default=512, ge=512, le=2048)
+    height: int = Field(default=512, ge=512, le=2048)
     images: int = Field(2, ge=1, le=4, description="How many images you wish to generate")
     guidance_scale: float = Field(7.5, ge=0, le=50, description="how much the prompt will influence the results")
     model_id: str = Field("stable-diffusion-v2", description="diffusion model id")
