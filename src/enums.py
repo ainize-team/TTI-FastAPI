@@ -11,7 +11,6 @@ class StrEnum(str, Enum):
 
 class EnvEnum(StrEnum):
     DEV: str = "dev"
-    STAGGING: str = "stagging"
     PROD: str = "prod"
 
 
