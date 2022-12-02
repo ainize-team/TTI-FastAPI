@@ -18,7 +18,7 @@ class ImageGenerationParams(BaseModel):
         description="try adding increments to your prompt such as 'oil on canvas', 'a painting', 'a book cover'",
     )
     negative_prompt: Optional[str] = Field(
-        None,
+        "",
         description="prompt value that you do not want to see in the resulting image",
     )
     steps: int = Field(
