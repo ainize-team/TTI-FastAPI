@@ -102,12 +102,14 @@ async def get_task_params(task_id: str):
             status=data["status"],
             params=ImageGenerationParams(
                 prompt=data["request"]["prompt"],
+                negative_prompt=data["request"]["negative_prompt"],
                 steps=data["request"]["steps"],
                 seed=data["request"]["seed"],
                 width=data["request"]["width"],
                 height=data["request"]["height"],
                 images=data["request"]["images"],
                 guidance_scale=data["request"]["guidance_scale"],
+                model_id=data["request"]["model_id"],
             ),
             updated_at=data["updated_at"],
         )
