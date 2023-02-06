@@ -110,6 +110,7 @@ async def get_task_params(task_id: str):
                 images=data["request"]["images"],
                 guidance_scale=data["request"]["guidance_scale"],
                 model_id=data["request"]["model_id"],
+                scheduler_type=data["request"]["scheduler_type"],
             ),
             updated_at=data["updated_at"],
         )
