@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Union
 
-import fastapi
 from celery import Celery
 from fastapi import APIRouter, HTTPException, Request, status
 from firebase_admin import db
@@ -15,6 +14,7 @@ from schemas import (
     ImageGenerationParamsResponse,
     ImageGenerationRequest,
     ImageGenerationResponse,
+    ImageGenerationTxHashResponse,
 )
 
 
@@ -71,9 +71,7 @@ async def get_task_image(task_id: str):
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
     except Exception as e:
-        raise HTTPException(
-            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
     if data is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
     if data["status"] == ResponseStatusEnum.ERROR:
@@ -115,6 +113,26 @@ async def get_task_params(task_id: str):
             updated_at=data["updated_at"],
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}"
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
+
+
+@router.get("/tasks/{task_id}/tx-hash", response_model=Union[ImageGenerationTxHashResponse, ImageGenerationResponse])
+async def get_tx_hash(task_id: str):
+    try:
+        ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
+        data = ref.get()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
+    if data["status"] == ResponseStatusEnum.ERROR:
+        return ImageGenerationResponse(
+            status=data["status"],
+            updated_at=data["updated_at"],
+            result=data["error"]["error_message"],
         )
+    return ImageGenerationTxHashResponse(
+        status=data["status"],
+        tx_hash=data["tx_hash"],
+        updated_at=data["updated_at"],
+    )

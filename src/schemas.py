@@ -52,7 +52,7 @@ class ImageGenerationRequest(BaseModel):
 
 class AsyncTaskResponse(BaseModel):
     task_id: str
-    updated_at: float = 0.0
+    updated_at: int = 0
 
 
 class Error(BaseModel):
@@ -68,11 +68,17 @@ class ImageGenerationResult(BaseModel):
 
 class ImageGenerationResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
-    updated_at: float = 0.0
+    updated_at: int = 0
     result: Union[Dict[str, ImageGenerationResult], None, str] = None
 
 
 class ImageGenerationParamsResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     params: ImageGenerationParams
-    updated_at: float = 0.0
+    updated_at: int = 0
+
+
+class ImageGenerationTxHashResponse(BaseModel):
+    status: ResponseStatusEnum = ResponseStatusEnum.PENDING
+    tx_hash: Dict[ResponseStatusEnum, str]
+    updated_at: int = 0
