@@ -72,12 +72,6 @@ class ImageGenerationResponse(BaseModel):
     result: Union[Dict[str, ImageGenerationResult], None, str] = None
 
 
-class ImageGenerationParamsResponse(BaseModel):
-    status: ResponseStatusEnum = ResponseStatusEnum.PENDING
-    params: ImageGenerationParams
-    updated_at: int = 0
-
-
 class ImageGenerationTxHashResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
     tx_hash: Dict[ResponseStatusEnum, str]
