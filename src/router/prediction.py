@@ -87,33 +87,37 @@ async def get_task_image(task_id: str):
     )
 
 
-@router.get("/tasks/{task_id}/params", response_model=ImageGenerationParamsResponse)
+@router.get("/tasks/{task_id}/params", response_model=Union[ImageGenerationParamsResponse, ImageGenerationResponse])
 async def get_task_params(task_id: str):
     try:
         ref = db.reference(f"{firebase_settings.firebase_app_name}/tasks/{task_id}")
         data = ref.get()
-        if data is None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
-        if data["status"] == ResponseStatusEnum.ERROR:
-            raise HTTPException(status_code=data["error"]["status_code"], detail=data["error"]["error_message"])
-        return ImageGenerationParamsResponse(
-            status=data["status"],
-            params=ImageGenerationParams(
-                prompt=data["request"]["prompt"],
-                negative_prompt=data["request"]["negative_prompt"],
-                steps=data["request"]["steps"],
-                seed=data["request"]["seed"],
-                width=data["request"]["width"],
-                height=data["request"]["height"],
-                images=data["request"]["images"],
-                guidance_scale=data["request"]["guidance_scale"],
-                model_id=data["request"]["model_id"],
-                scheduler_type=data["request"]["scheduler_type"],
-            ),
-            updated_at=data["updated_at"],
-        )
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"FireBaseError({task_id}): {e}")
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Task ID({task_id}) not found")
+    if data["status"] == ResponseStatusEnum.ERROR:
+        return ImageGenerationResponse(
+            status=data["status"],
+            updated_at=data["updated_at"],
+            result=data["error"]["error_message"],
+        )
+    return ImageGenerationParamsResponse(
+        status=data["status"],
+        params=ImageGenerationParams(
+            prompt=data["request"]["prompt"],
+            negative_prompt=data["request"]["negative_prompt"],
+            steps=data["request"]["steps"],
+            seed=data["request"]["seed"],
+            width=data["request"]["width"],
+            height=data["request"]["height"],
+            images=data["request"]["images"],
+            guidance_scale=data["request"]["guidance_scale"],
+            model_id=data["request"]["model_id"],
+            scheduler_type=data["request"]["scheduler_type"],
+        ),
+        updated_at=data["updated_at"],
+    )
 
 
 @router.get("/tasks/{task_id}/tx-hash", response_model=Union[ImageGenerationTxHashResponse, ImageGenerationResponse])
