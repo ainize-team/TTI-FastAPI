@@ -29,7 +29,7 @@ class ImageGenerationParams(BaseModel):
     height: int = Field(default=512, ge=512, le=1024)
     images: int = Field(2, ge=1, le=4, description="How many images you wish to generate")
     guidance_scale: float = Field(7.5, ge=0, le=50, description="how much the prompt will influence the results")
-    model_id: ModelEnum = Field(ModelEnum.STABLE_DIFFUSION_V2_1, description="diffusion model id")
+    model_id: ModelEnum = Field(ModelEnum.STABLE_DIFFUSION_V2_1_768, description="diffusion model id")
     scheduler_type: SchedulerType = Field(SchedulerType.DDIM, description="Scheduler Type")
 
     @validator("width")
@@ -52,7 +52,7 @@ class ImageGenerationRequest(BaseModel):
 
 class AsyncTaskResponse(BaseModel):
     task_id: str
-    updated_at: float = 0.0
+    updated_at: int = 0
 
 
 class Error(BaseModel):
@@ -68,11 +68,11 @@ class ImageGenerationResult(BaseModel):
 
 class ImageGenerationResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
-    updated_at: float = 0.0
+    updated_at: int = 0
     result: Union[Dict[str, ImageGenerationResult], None, str] = None
 
 
-class ImageGenerationParamsResponse(BaseModel):
+class ImageGenerationTxHashResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
-    params: ImageGenerationParams
-    updated_at: float = 0.0
+    tx_hash: Dict[ResponseStatusEnum, str]
+    updated_at: int = 0

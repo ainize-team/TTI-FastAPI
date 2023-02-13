@@ -5,12 +5,12 @@ from enums import EnvEnum
 
 class ServerSettings(BaseSettings):
     app_name: str = "Text To Art API Server"
-    app_version: str = "0.4.1"
+    app_version: str = "0.5.0"
     app_env: EnvEnum = EnvEnum.DEV
 
 
 class FireBaseSettings(BaseSettings):
-    firebase_app_name: str = "text-to-art"
+    firebase_app_name: str = "text_to_art"
     firebase_cred_path: str = "./key/serviceAccountKey.json"
     firebase_database_url: str
 
