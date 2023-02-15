@@ -23,7 +23,7 @@ use_parentheses = true
 
 [tool.poetry]
 name = "TTI-FastAPI"
-version = "0.4.1"
+version = "0.6.0"
 description = ""
 authors = ["Jibaek Lim <jibaek@comcom.ai>", "YoungJae Kim <byeongal@comcom.ai>", "DongHoon Baek <baek@comcom.ai>", "Heewon Shin <heewon@comcom.ai>"]
 license = "MIT"
