@@ -5,7 +5,7 @@ from enums import EnvEnum
 
 class ServerSettings(BaseSettings):
     app_name: str = "Text To Art API Server"
-    app_version: str = "0.5.0"
+    app_version: str = "0.6.0"
     app_env: EnvEnum = EnvEnum.DEV
 
 

@@ -28,6 +28,7 @@ class ModelEnum(StrEnum):
     STABLE_DIFFUSION_V2_1 = "stable-diffusion-v2-1"
     STABLE_DIFFUSION_V2_768 = "stable-diffusion-v2-768"
     STABLE_DIFFUSION_V2_1_768 = "stable-diffusion-v2-1-768"
+    OPENJOURNEY_V2 = "openjourney-v2"
 
 
 class SchedulerType(StrEnum):
