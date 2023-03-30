@@ -74,5 +74,5 @@ class ImageGenerationResponse(BaseModel):
 
 class ImageGenerationTxHashResponse(BaseModel):
     status: ResponseStatusEnum = ResponseStatusEnum.PENDING
-    tx_hash: Dict[ResponseStatusEnum, str]
+    result: Dict[ResponseStatusEnum, str]
     updated_at: int = 0
