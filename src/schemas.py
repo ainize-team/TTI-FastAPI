@@ -22,13 +22,13 @@ class ImageGenerationParams(BaseModel):
         description="prompt value that you do not want to see in the resulting image",
     )
     steps: int = Field(
-        default=50, ge=1, le=100, description="more steps can increase quality but will take longer to generate"
+        default=30, ge=10, le=150, description="more steps can increase quality but will take longer to generate"
     )
     seed: int = Field(default=1, ge=0, le=4294967295)
-    width: int = Field(default=512, ge=512, le=1024)
-    height: int = Field(default=512, ge=512, le=1024)
+    width: int = Field(default=768, ge=512, le=1024)
+    height: int = Field(default=768, ge=512, le=1024)
     images: int = Field(2, ge=1, le=4, description="How many images you wish to generate")
-    guidance_scale: float = Field(7.5, ge=0, le=50, description="how much the prompt will influence the results")
+    guidance_scale: float = Field(7, ge=0, le=20, description="how much the prompt will influence the results")
     model_id: ModelEnum = Field(ModelEnum.STABLE_DIFFUSION_V2_1_768, description="diffusion model id")
     scheduler_type: SchedulerType = Field(SchedulerType.DDIM, description="Scheduler Type")
 
