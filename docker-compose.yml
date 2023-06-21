@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.11.2-management
+    container_name: tti-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file:
+      - ./envs/rabbitmq.env
+    volumes:
+      - ./scripts/init_rabbitmq.sh:/scripts/init_rabbitmq.sh
+    networks:
+      - dev
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tti-api
+    ports:
+      - 8000:8000
+    env_file:
+      - ./envs/fastapi.env
+    volumes:
+      - <firebase_credential_dir_path>:/app/key/
+    networks:
+      - dev
+    depends_on:
+     - rabbitmq
+
+networks:
+  dev:
+    driver: bridge
