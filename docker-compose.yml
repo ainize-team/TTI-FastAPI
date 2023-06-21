@@ -13,6 +13,7 @@ services:
       - ./scripts/init_rabbitmq.sh:/scripts/init_rabbitmq.sh
     networks:
       - dev
+    restart: unless-stopped
 
   api-server:
     build:
@@ -27,6 +28,7 @@ services:
       - <firebase_credential_dir_path>:/app/key/
     networks:
       - dev
+    restart: unless-stopped
     depends_on:
      - rabbitmq
 
