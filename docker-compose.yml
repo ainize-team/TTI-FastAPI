@@ -1,47 +1,9 @@
-# version: '3'
-
-# services:
-#   rabbitmq:
-#     image: rabbitmq:3.11.2-management
-#     container_name: tti-rabbitmq
-#     ports:
-#       - 5672:5672
-#       - 15672:15672
-#     env_file:
-#       - ./envs/rabbitmq.env
-#     volumes:
-#       - ./scripts/init_rabbitmq.sh:/scripts/init_rabbitmq.sh
-#     restart: unless-stopped
-#     networks:
-#       - dev
-
-#   api-server:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile
-#     container_name: tti-api
-#     ports:
-#       - 8000:8000
-#     env_file:
-#       - ./envs/fastapi.env
-#     volumes:
-#       - <firebase_credential_dir_path>:/app/key/
-#     networks:
-#       - dev
-#     restart: unless-stopped
-#     depends_on:
-#      - rabbitmq
-
-# networks:
-#   dev:
-#     driver: bridge
-
 version: '3'
 
 services:
   rabbitmq:
     image: rabbitmq:3.11.2-management
-    container_name: tti-dev-rabbitmq
+    container_name: tti-rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
@@ -51,30 +13,20 @@ services:
       - ./scripts/init_rabbitmq.sh:/scripts/init_rabbitmq.sh
     networks:
       - dev
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 16000M
 
   api-server:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tti-dev-api
+    container_name: tti-api
     ports:
       - 8000:8000
     env_file:
       - ./envs/fastapi.env
     volumes:
-      - ./serviceAccountKey.json:/app/key/serviceAccountKey.json
+      - <firebase_credential_dir_path>:/app/key/
     networks:
       - dev
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 16000M
     depends_on:
      - rabbitmq
 
