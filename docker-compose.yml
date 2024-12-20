@@ -16,10 +16,8 @@ services:
     restart: unless-stopped
 
   api-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: tti-api
+    image: devainetwork/tti-fastapi
+    container_name: tti-fastapi
     ports:
       - 8000:8000
     env_file:
