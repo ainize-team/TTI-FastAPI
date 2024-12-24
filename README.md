@@ -10,7 +10,7 @@ git clone https://github.com/ainize-team/TTI-FastAPI
 cd TTI-FastAPI
 ```
 
-2. Edit [docker-compose.yml](./docker-compose.yml), [rabbitmq.env](./envs/rabbimq.env.sample) and [fastapi.env](./envs/fastapi.env.sample) for your project.
+2. Edit [docker-compose.yml](./docker-compose.yml), [rabbitmq.env](./envs/rabbitmq.env.sample) and [fastapi.env](./envs/fastapi.env.sample) for your project.
 
 3. Run containers
 ```shell
