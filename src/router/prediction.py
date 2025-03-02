@@ -126,6 +126,6 @@ async def get_tx_hash(task_id: str):
         )
     return ImageGenerationTxHashResponse(
         status=data["status"],
-        tx_hash=data["tx_hash"],
+        result=data["tx_hash"],
         updated_at=data["updated_at"],
     )
